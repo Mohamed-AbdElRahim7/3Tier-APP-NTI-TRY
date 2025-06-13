@@ -73,4 +73,44 @@ pipeline {
       }
     }
   }
+
+  post {
+    failure {
+      dir('terraform') {
+        withCredentials([
+          usernamePassword(
+            credentialsId: 'aws-creds',
+            usernameVariable: 'AWS_ACCESS_KEY_ID',
+            passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+          )
+        ]) {
+          sh '''
+            echo "⚠️ Pipeline failed. Running terraform destroy..."
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            terraform destroy -auto-approve || true
+          '''
+        }
+      }
+    }
+
+    aborted {
+      dir('terraform') {
+        withCredentials([
+          usernamePassword(
+            credentialsId: 'aws-creds',
+            usernameVariable: 'AWS_ACCESS_KEY_ID',
+            passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+          )
+        ]) {
+          sh '''
+            echo "🛑 Pipeline aborted. Running terraform destroy..."
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            terraform destroy -auto-approve || true
+          '''
+        }
+      }
+    }
+  }
 }
