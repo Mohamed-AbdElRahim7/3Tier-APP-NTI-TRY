@@ -2,7 +2,7 @@
 # terraform.tfvars - actual input values
 ############################################
 
-project_name = "NTI-3Tier-App"
+project_name = "nti-3tier-app"
 region       = "us-east-1"
 account_id   = "757351641388"
 
