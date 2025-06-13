@@ -28,4 +28,4 @@ ami_id                = "ami-0c02fb55956c7d316"
 jenkins_instance_type = "t3.medium"
 key_name              = "jenkins"
 
-elb_logs_bucket_name = "nti-elb-logs-bucket"
+elb_logs_bucket_name = "nti-elb-logs-bucket-abdelrahim"
