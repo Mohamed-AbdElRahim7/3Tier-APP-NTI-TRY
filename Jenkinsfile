@@ -8,7 +8,7 @@ pipeline {
   stages {
     stage('Clone Repo') {
       steps {
-        git branch: 'main', url: 'https://github.com/Mohamed-AbdElRahim7/3Tier-App-Nti.git'
+        git branch: 'main', url: 'https://github.com/Mohamed-AbdElRahim7/3Tier-APP-NTI-TRY.git'
         echo '✅ Finished cloning repository.'
       }
     }
