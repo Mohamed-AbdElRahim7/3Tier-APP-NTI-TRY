@@ -16,17 +16,8 @@ pipeline {
     stage('Terraform Init') {
       steps {
         dir('terraform') {
-          withCredentials([
-            usernamePassword(credentialsId: 'aws-access-key-id', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_ACCESS_KEY_PLACEHOLDER'),
-            usernamePassword(credentialsId: 'aws-secret-access-key', usernameVariable: 'AWS_SECRET_ACCESS_KEY', passwordVariable: 'AWS_SECRET_PLACEHOLDER')
-          ]) {
-            sh '''
-              export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-              export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-              terraform init
-            '''
-            echo '✅ Finished terraform init.'
-          }
+          sh 'terraform init'
+          echo '✅ Finished terraform init.'
         }
       }
     }
@@ -43,18 +34,20 @@ pipeline {
     stage('Terraform Plan') {
       steps {
         dir('terraform') {
-          sh 'terraform plan'
+          withCredentials([
+            usernamePassword(
+              credentialsId: 'aws-creds',
+              usernameVariable: 'AWS_ACCESS_KEY_ID',
+              passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+            )
+          ]) {
+            sh '''
+              export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+              export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+              terraform plan
+            '''
+          }
           echo '✅ Finished terraform plan.'
-        }
-      }
-    }
-
-    stage('Terraform Apply') {
-      steps {
-        dir('terraform') {
-          input message: "Apply Terraform changes?"
-          sh 'terraform apply -auto-approve'
-          echo '✅ Finished terraform apply.'
         }
       }
     }
