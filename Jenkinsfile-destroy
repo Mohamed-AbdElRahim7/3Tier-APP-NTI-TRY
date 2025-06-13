@@ -2,25 +2,43 @@ pipeline {
   agent any
 
   environment {
-    TF_LOG = "ERROR"
+    TF_IN_AUTOMATION = "true"
   }
 
   stages {
+    stage('Clone Repo') {
+      steps {
+        git branch: 'main', url: 'https://github.com/Mohamed-AbdElRahim7/3Tier-APP-NTI-TRY.git'
+        echo '✅ Finished cloning repository.'
+      }
+    }
+
+    stage('Terraform Init') {
+      steps {
+        dir('terraform') {
+          sh 'terraform init'
+          echo '✅ Finished terraform init.'
+        }
+      }
+    }
+
     stage('Terraform Destroy') {
       steps {
         dir('terraform') {
           withCredentials([
-            string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
-            string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
+            usernamePassword(
+              credentialsId: 'aws-creds',
+              usernameVariable: 'AWS_ACCESS_KEY_ID',
+              passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+            )
           ]) {
             sh '''
-              echo "✅ Initializing Terraform..."
-              terraform init -input=false
-
-              echo "⚠️ Starting Terraform Destroy..."
+              export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+              export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
               terraform destroy -auto-approve
             '''
           }
+          echo '✅ Finished terraform destroy.'
         }
       }
     }
