@@ -36,6 +36,9 @@ module "eks" {
   max_size            = var.max_size
   min_size            = var.min_size
   project_name        = var.project_name
+  cluster_role_arn     = module.iam.eks_cluster_role_arn
+  node_group_role_arn  = module.iam.eks_node_group_role_arn
+
 }
 
 module "rds" {
