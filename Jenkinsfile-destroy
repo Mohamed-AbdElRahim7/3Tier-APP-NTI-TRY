@@ -9,7 +9,7 @@ pipeline {
     stage('Clone Repo') {
       steps {
         git branch: 'main', url: 'https://github.com/Mohamed-AbdElRahim7/3Tier-APP-NTI-TRY.git'
-        echo '✅ Finished cloning repository.'
+        echo '✅ Cloned repository.'
       }
     }
 
@@ -17,42 +17,12 @@ pipeline {
       steps {
         dir('terraform') {
           sh 'terraform init'
-          echo '✅ Finished terraform init.'
+          echo '✅ Initialized Terraform.'
         }
       }
     }
 
-    stage('Terraform Validate') {
-      steps {
-        dir('terraform') {
-          sh 'terraform validate'
-          echo '✅ Finished terraform validate.'
-        }
-      }
-    }
-
-    stage('Partial Apply VPC Only') {
-      steps {
-        dir('terraform') {
-          withCredentials([
-            usernamePassword(
-              credentialsId: 'aws-creds',
-              usernameVariable: 'AWS_ACCESS_KEY_ID',
-              passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-            )
-          ]) {
-            sh '''
-              export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-              export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-              terraform apply -target=module.vpc -auto-approve
-            '''
-            echo '✅ Partial apply of VPC completed.'
-          }
-        }
-      }
-    }
-
-    stage('Terraform Import EKS Cluster') {
+    stage('Import EKS Cluster') {
       steps {
         dir('terraform') {
           withCredentials([
@@ -73,6 +43,27 @@ pipeline {
       }
     }
 
+    stage('Import EKS Node Group') {
+      steps {
+        dir('terraform') {
+          withCredentials([
+            usernamePassword(
+              credentialsId: 'aws-creds',
+              usernameVariable: 'AWS_ACCESS_KEY_ID',
+              passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+            )
+          ]) {
+            sh '''
+              export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+              export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+              terraform import module.eks.aws_eks_node_group.default nti-3Tier-App:nti-3Tier-App-default
+            '''
+            echo '✅ Imported EKS Node Group.'
+          }
+        }
+      }
+    }
+
     stage('Terraform Destroy') {
       steps {
         dir('terraform') {
@@ -88,7 +79,7 @@ pipeline {
               export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
               terraform destroy -auto-approve
             '''
-            echo '✅ Finished terraform destroy.'
+            echo '✅ Destroyed all resources.'
           }
         }
       }
