@@ -8,7 +8,7 @@ pipeline {
   stages {
     stage('Clone Repo') {
       steps {
-        git branch: 'main', url: 'https://github.com/Mohamed-AbdElRahim7/3Tier-APP-NTI-TRY.git'
+        git branch: 'main', url: 'https://github.com/Mohamed-AbdElRahim7/3Tier-App-Nti.git'
         echo '✅ Finished cloning repository.'
       }
     }
@@ -48,6 +48,27 @@ pipeline {
             '''
           }
           echo '✅ Finished terraform plan.'
+        }
+      }
+    }
+
+    stage('Terraform Apply') {
+      steps {
+        dir('terraform') {
+          withCredentials([
+            usernamePassword(
+              credentialsId: 'aws-creds',
+              usernameVariable: 'AWS_ACCESS_KEY_ID',
+              passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+            )
+          ]) {
+            sh '''
+              export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+              export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+              terraform apply -auto-approve
+            '''
+          }
+          echo '✅ Finished terraform apply.'
         }
       }
     }
