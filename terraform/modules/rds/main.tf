@@ -20,6 +20,8 @@ resource "aws_db_instance" "main" {
   multi_az                = false
   storage_encrypted       = true
   private_subnet_ids = module.vpc.private_subnet_ids
+  username = var.db_username
+  password = var.db_password
 
 
   tags = {
