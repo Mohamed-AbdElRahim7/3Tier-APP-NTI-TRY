@@ -56,7 +56,6 @@ module "rds" {
   db_sg_id              = module.security_groups.rds_sg_id
   db_secret_arn         = module.secrets.secret_arn
 
-  db_sg_id = module.eks.node_security_group_id
 }
 
 module "ec2_jenkins" {
