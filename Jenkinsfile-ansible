@@ -1,0 +1,51 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Clone Repo') {
+      steps {
+        git branch: 'main', url: 'https://github.com/Mohamed-AbdElRahim7/3Tier-APP-NTI-TRY.git'
+        echo '✅ Finished cloning repository.'
+      }
+    }
+
+    stage('Prepare SSH Key') {
+      steps {
+        withCredentials([sshUserPrivateKey(
+          credentialsId: 'ec2-ssh-key',
+          keyFileVariable: 'SSH_KEY'
+        )]) {
+          sh '''
+            mkdir -p ~/.ssh
+            cp $SSH_KEY ~/.ssh/jenkins
+            chmod 600 ~/.ssh/jenkins
+          '''
+          echo '✅ SSH Key prepared for Ansible.'
+        }
+      }
+    }
+
+    stage('Debug SSH Key') {
+      steps {
+        sh '''
+          echo "📂 Listing ~/.ssh directory:"
+          ls -la ~/.ssh
+
+          echo "🔐 Checking if ~/.ssh/jenkins exists:"
+          [ -f ~/.ssh/jenkins ] && echo '✅ SSH key file found.' || echo '❌ SSH key file NOT found.'
+        '''
+      }
+    }
+
+    stage('Run Ansible Playbook') {
+      steps {
+        dir('ansible') {
+          sh '''
+            ansible-playbook -i inventory playbooks/setup.yml
+          '''
+          echo '✅ Ansible Playbook executed.'
+        }
+      }
+    }
+  }
+}
