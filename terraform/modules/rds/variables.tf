@@ -33,3 +33,9 @@ variable "db_secret_arn" {
   description = "ARN of the secret storing RDS credentials"
 }
 
+variable "db_username" {
+  description = "Database master username"
+  type        = string
+}
+
+
