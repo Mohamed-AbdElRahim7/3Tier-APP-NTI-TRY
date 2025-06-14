@@ -9,7 +9,7 @@ pipeline {
     stage('Clone Repo') {
       steps {
         git branch: 'main', url: 'https://github.com/Mohamed-AbdElRahim7/3Tier-APP-NTI-TRY.git'
-        echo 'âœ… Finished cloning repository.'
+        echo '✅ Finished cloning repository.'
       }
     }
 
@@ -28,17 +28,7 @@ pipeline {
               terraform refresh
             '''
           }
-          echo 'âœ… Finished terraform init & refresh.'
-        }
-      }
-    }
-      steps {
-        dir('terraform') {
-          sh '''
-            terraform init
-            terraform refresh
-          '''
-          echo 'âœ… Finished terraform init & refresh.'
+          echo '✅ Finished terraform init & refresh.'
         }
       }
     }
@@ -47,7 +37,7 @@ pipeline {
       steps {
         dir('terraform') {
           sh 'terraform validate'
-          echo 'âœ… Finished terraform validate.'
+          echo '✅ Finished terraform validate.'
         }
       }
     }
@@ -66,7 +56,7 @@ pipeline {
               terraform plan
             '''
           }
-          echo 'âœ… Finished terraform plan.'
+          echo '✅ Finished terraform plan.'
         }
       }
     }
@@ -85,7 +75,7 @@ pipeline {
               terraform apply -auto-approve
             '''
           }
-          echo 'âœ… Finished terraform apply.'
+          echo '✅ Finished terraform apply.'
         }
       }
     }
@@ -95,10 +85,10 @@ pipeline {
         sh '''
           cd terraform
           EC2_IP=$(terraform output -raw jenkins_public_ip)
-          echo "âœ… EC2 Public IP is: $EC2_IP"
+          echo "✅ EC2 Public IP is: $EC2_IP"
           cd ../ansible
           sed -i "s/^ec2-jenkins .*/ec2-jenkins ansible_host=${EC2_IP} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/jenkins/" inventory
-          echo "âœ… Inventory file updated with EC2 IP."
+          echo "✅ Inventory file updated with EC2 IP."
         '''
       }
     }
@@ -114,7 +104,7 @@ pipeline {
             cp $SSH_KEY ~/.ssh/jenkins
             chmod 600 ~/.ssh/jenkins
           '''
-          echo 'âœ… SSH Key prepared for Ansible.'
+          echo '✅ SSH Key prepared for Ansible.'
         }
       }
     }
@@ -125,7 +115,7 @@ pipeline {
           sh '''
             ansible-playbook -i inventory playbooks/setup.yml
           '''
-          echo 'âœ… Ansible Playbook executed.'
+          echo '✅ Ansible Playbook executed.'
         }
       }
     }
@@ -140,7 +130,7 @@ pipeline {
           passwordVariable: 'AWS_SECRET_ACCESS_KEY'
         )]) {
           sh '''
-            echo "âš ï¸ Pipeline failed. Running terraform destroy..."
+            echo "⚠️ Pipeline failed. Running terraform destroy..."
             export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
             terraform destroy -auto-approve || true
@@ -157,7 +147,7 @@ pipeline {
           passwordVariable: 'AWS_SECRET_ACCESS_KEY'
         )]) {
           sh '''
-            echo "ðŸ›‘ Pipeline aborted. Running terraform destroy..."
+            echo "🛑 Pipeline aborted. Running terraform destroy..."
             export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
             terraform destroy -auto-approve || true
