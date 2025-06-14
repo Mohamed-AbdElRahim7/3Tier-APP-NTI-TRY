@@ -1,7 +1,11 @@
 - name: Setup Jenkins EC2 and install CloudWatch Agent
   hosts: jenkins
   become: true
+  gather_facts: false   # ⬅️ نوقف Gathering Facts في الأول
+  pre_tasks:
+    - name: Install Python 3.11 first
+      import_tasks: ../roles/jenkins/tasks/install_python.yml
   vars:
-    ansible_python_interpreter: /usr/local/bin/python3.11
+    ansible_python_interpreter: /usr/bin/python
   roles:
     - jenkins
