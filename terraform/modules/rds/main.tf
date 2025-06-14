@@ -1,5 +1,3 @@
-  secret_id = var.db_secret_arn
-}
 
 locals {
 }
