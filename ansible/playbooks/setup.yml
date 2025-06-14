@@ -1,0 +1,12 @@
+- name: Install Python if not already installed
+  hosts: jenkins
+  gather_facts: false
+  roles:
+    - bootstrap-python
+
+- name: Setup Jenkins EC2 and install CloudWatch Agent
+  hosts: jenkins
+  become: true
+  roles:
+    - jenkins
+    - cloudwatch
