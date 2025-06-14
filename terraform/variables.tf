@@ -68,16 +68,9 @@ variable "db_name" {
   description = "Database name"
 }
 
-variable "db_username" {
-  type        = string
-  description = "RDS username (stored in Secrets Manager)"
-}
 
-variable "db_password" {
-  type        = string
-  sensitive   = true
-  description = "RDS password (stored in Secrets Manager)"
-}
+
+
 
 variable "db_instance_class" {
   type        = string
