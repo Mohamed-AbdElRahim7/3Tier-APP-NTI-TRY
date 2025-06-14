@@ -39,9 +39,9 @@ pipeline {
 
     stage('Run Ansible Playbook') {
       steps {
-        dir('ansible/playbooks') {
+        dir('ansible') {
           sh '''
-            ansible-playbook -i ../inventory setup.yml
+            ansible-playbook -i inventory playbooks/setup.yml
           '''
           echo '✅ Ansible Playbook executed.'
         }
