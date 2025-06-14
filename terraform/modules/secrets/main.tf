@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "rds" {
-  name = "${var.project_name}-rds-credentials-19-1-lolo"
+  name = "${var.project_name}-rds-credentials-19-1-lolo-and-rahim"
 
   tags = {
     Name    = "${var.project_name}-rds-secret"
