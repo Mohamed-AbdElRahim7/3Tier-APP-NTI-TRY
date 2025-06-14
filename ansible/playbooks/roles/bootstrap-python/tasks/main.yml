@@ -1,13 +1,14 @@
-- name: Enable EPEL repository (RedHat-based)
-  shell: amazon-linux-extras enable epel || true
-  ignore_errors: true
+- name: Install Python 3.9 via raw shell
+  raw: |
+    sudo yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make
+    cd /usr/src
+    sudo wget https://www.python.org/ftp/python/3.9.18/Python-3.9.18.tgz
+    sudo tar xzf Python-3.9.18.tgz
+    cd Python-3.9.18
+    sudo ./configure --enable-optimizations
+    sudo make altinstall
+    sudo ln -sf /usr/local/bin/python3.9 /usr/bin/python3
 
-- name: Install Python 3.9
-  yum:
-    name: python39
-    state: present
-
-- name: Set python3 alternative to point to python3.9
-  alternatives:
-    name: python3
-    path: /usr/bin/python3.9
+- name: Create symlink for pip
+  raw: |
+    sudo ln -sf /usr/local/bin/pip3.9 /usr/bin/pip3
