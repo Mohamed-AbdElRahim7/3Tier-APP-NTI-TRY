@@ -9,14 +9,14 @@ pipeline {
     stage('Clone Repo') {
       steps {
         git branch: 'main', url: 'https://github.com/Mohamed-AbdElRahim7/3Tier-APP-NTI-TRY.git'
-        echo '✅ Finished cloning repository.'
+        echo 'âœ… Finished cloning repository.'
       }
     }
 
     stage('Clean Terraform State') {
       steps {
         dir('terraform') {
-          echo '🧹 Cleaning old Terraform setup (if any)...'
+          echo 'ðŸ§¹ Cleaning old Terraform setup (if any)...'
           sh 'rm -rf .terraform terraform.tfstate terraform.tfstate.backup'
         }
       }
@@ -39,7 +39,7 @@ pipeline {
               terraform refresh
             '''
           }
-          echo '✅ Finished terraform init & refresh.'
+          echo 'âœ… Finished terraform init & refresh.'
         }
       }
     }
@@ -48,7 +48,7 @@ pipeline {
       steps {
         dir('terraform') {
           sh 'terraform validate'
-          echo '✅ Finished terraform validate.'
+          echo 'âœ… Finished terraform validate.'
         }
       }
     }
@@ -69,7 +69,7 @@ pipeline {
               terraform plan
             '''
           }
-          echo '✅ Finished terraform plan.'
+          echo 'âœ… Finished terraform plan.'
         }
       }
     }
@@ -90,7 +90,7 @@ pipeline {
               terraform apply -auto-approve
             '''
           }
-          echo '✅ Finished terraform apply.'
+          echo 'âœ… Finished terraform apply.'
         }
       }
     }
@@ -107,7 +107,7 @@ pipeline {
           )
         ]) {
           sh '''
-            echo "⚠️ Pipeline failed. Running terraform destroy..."
+            echo "âš ï¸ Pipeline failed. Running terraform destroy..."
             export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
             terraform destroy -auto-approve || true
@@ -126,7 +126,7 @@ pipeline {
           )
         ]) {
           sh '''
-            echo "🛑 Pipeline aborted. Running terraform destroy..."
+            echo "ðŸ›‘ Pipeline aborted. Running terraform destroy..."
             export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
             terraform destroy -auto-approve || true
