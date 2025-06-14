@@ -75,8 +75,9 @@ resource "aws_security_group" "jenkins_sg" {
   }
 }
 resource "aws_security_group" "rds_sg" {
-  name   = "${var.project_name}-rds-sg"
-  vpc_id = var.vpc_id
+  name        = "${var.project_name}-rds-sg"
+  description = "Allow MySQL from EKS Nodes"
+  vpc_id      = var.vpc_id
 
   ingress {
     from_port       = 3306
