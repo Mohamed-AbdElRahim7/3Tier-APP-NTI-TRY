@@ -112,8 +112,3 @@ variable "db_password" {
   type        = string
   description = "Password for RDS"
 }
-
-variable "project_name" {
-  type        = string
-  description = "Project name prefix for resources"
-}
