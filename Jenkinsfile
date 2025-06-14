@@ -16,6 +16,24 @@ pipeline {
     stage('Terraform Init') {
       steps {
         dir('terraform') {
+          withCredentials([usernamePassword(
+            credentialsId: 'aws-creds',
+            usernameVariable: 'AWS_ACCESS_KEY_ID',
+            passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+          )]) {
+            sh '''
+              export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+              export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+              terraform init
+              terraform refresh
+            '''
+          }
+          echo 'âœ… Finished terraform init & refresh.'
+        }
+      }
+    }
+      steps {
+        dir('terraform') {
           sh '''
             terraform init
             terraform refresh
