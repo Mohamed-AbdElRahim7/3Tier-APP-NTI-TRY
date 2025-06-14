@@ -87,7 +87,7 @@ pipeline {
           EC2_IP=$(terraform output -raw jenkins_public_ip)
           echo "✅ EC2 Public IP is: $EC2_IP"
           cd ../ansible
-          sed -i "s/^ec2-jenkins .*/ec2-jenkins ansible_host=${EC2_IP} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/jenkins/" inventory
+          sed -i "s#^ec2-jenkins .*#ec2-jenkins ansible_host=${EC2_IP} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/jenkins#" inventory
           echo "✅ Inventory file updated with EC2 IP."
         '''
       }
