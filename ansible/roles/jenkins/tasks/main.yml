@@ -1,0 +1,78 @@
+- name: Add Jenkins repo key
+  rpm_key:
+    key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    state: present
+
+- name: Add Jenkins repo
+  get_url:
+    url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+
+- name: Install Java and Jenkins
+  yum:
+    name:
+      - java-11-openjdk
+      - jenkins
+    state: present
+
+- name: Enable and start Jenkins service
+  systemd:
+    name: jenkins
+    enabled: yes
+    state: started
+
+- name: Open port 8080 in firewalld
+  firewalld:
+    port: 8080/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Install common tools
+  yum:
+    name:
+      - git
+      - wget
+    state: present
+
+- name: Wait for Jenkins to be up
+  uri:
+    url: http://localhost:8080/login
+    status_code: 200
+  register: result
+  retries: 30
+  delay: 10
+  until: result.status == 200
+
+- name: Get Jenkins initial admin password
+  slurp:
+    src: /var/lib/jenkins/secrets/initialAdminPassword
+  register: admin_pass
+
+- name: Save Jenkins admin password to file (locally)
+  copy:
+    content: "{{ admin_pass['content'] | b64decode }}"
+    dest: /tmp/jenkins_admin_pass.txt
+
+- name: Download Jenkins CLI
+  get_url:
+    url: http://localhost:8080/jnlpJars/jenkins-cli.jar
+    dest: /tmp/jenkins-cli.jar
+
+- name: Install Jenkins plugins
+  shell: |
+    java -jar /tmp/jenkins-cli.jar -s http://localhost:8080/ -auth admin:$(cat /tmp/jenkins_admin_pass.txt) install-plugin {{ item }} -deploy
+  with_items:
+    - git
+    - workflow-aggregator
+    - docker-plugin
+    - blueocean
+    - credentials-binding
+    - aws-credentials
+    - configuration-as-code
+  register: plugin_output
+
+- name: Restart Jenkins after plugin installation
+  shell: |
+    java -jar /tmp/jenkins-cli.jar -s http://localhost:8080/ -auth admin:$(cat /tmp/jenkins_admin_pass.txt) safe-restart
