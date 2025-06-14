@@ -1,46 +1,17 @@
 - name: Install Java (Jenkins dependency)
-  yum:
-    name: java-11-openjdk
-    state: present
+  raw: |
+    sudo yum install -y java-11-openjdk
 
 - name: Add Jenkins repo
-  get_url:
-    url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
-    dest: /etc/yum.repos.d/jenkins.repo
-
-- name: Import Jenkins GPG key
-  rpm_key:
-    state: present
-    key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+  raw: |
+    sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
 
 - name: Install Jenkins
-  yum:
-    name: jenkins
-    state: present
+  raw: |
+    sudo yum install -y jenkins
 
 - name: Start and enable Jenkins service
-  service:
-    name: jenkins
-    state: started
-    enabled: true
-
-
-- name: Wait for Jenkins to be ready
-  uri:
-    url: http://localhost:8080/login
-    status_code: 200
-  register: result
-  until: result.status == 200
-  retries: 10
-  delay: 10
-
-- name: Download jenkins-cli.jar
-  get_url:
-    url: http://localhost:8080/jnlpJars/jenkins-cli.jar
-    dest: /opt/jenkins-cli.jar
-
-- name: Install Jenkins plugins
-  shell: |
-    java -jar /opt/jenkins-cli.jar -s http://localhost:8080/ install-plugin git docker-workflow blueocean -restart
-  environment:
-    JENKINS_HOME: /var/lib/jenkins
+  raw: |
+    sudo systemctl enable jenkins
+    sudo systemctl start jenkins
