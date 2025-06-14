@@ -1,37 +1,48 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        TF_IMAGE = "hashicorp/terraform:1.6.6"
-        TF_WORKDIR = "terraform"
+  environment {
+    TF_IN_AUTOMATION = "true"
+  }
+
+  stages {
+    stage('Clone Repo') {
+      steps {
+        git branch: 'main', url: 'https://github.com/Mohamed-AbdElRahim7/3Tier-APP-NTI-TRY.git'
+        echo '✅ Finished cloning repository.'
+      }
     }
 
-    stages {
-        stage('Terraform Destroy') {
-            steps {
-                dir("${TF_WORKDIR}") {
-                    withCredentials([
-                        string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-                        string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-                    ]) {
-                        sh '''
-                            docker run --rm \
-                            -v $PWD:/workspace \
-                            -w /workspace \
-                            -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-                            -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
-                            ${TF_IMAGE} init
-
-                            docker run --rm \
-                            -v $PWD:/workspace \
-                            -w /workspace \
-                            -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-                            -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
-                            ${TF_IMAGE} destroy -auto-approve
-                        '''
-                    }
-                }
-            }
+    stage('Terraform Init') {
+      steps {
+        dir('terraform') {
+          sh 'terraform init'
+          echo '✅ Finished terraform init.'
         }
+      }
     }
+
+
+    stage('Terraform Destroy') {
+      steps {
+        dir('terraform') {
+          withCredentials([
+            usernamePassword(
+              credentialsId: 'aws-creds',
+              usernameVariable: 'AWS_ACCESS_KEY_ID',
+              passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+            )
+          ]) {
+            sh '''
+              echo "🗑️ Running terraform destroy..."
+              export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+              export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+              terraform destroy -auto-approve
+            '''
+          }
+          echo '✅ Finished terraform destroy.'
+        }
+      }
+    }
+  }
 }
