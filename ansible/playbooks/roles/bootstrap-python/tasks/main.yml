@@ -1,5 +1,16 @@
-- name: Ensure Python is installed on target
-  raw: |
-    if ! command -v python3; then
-      sudo yum install -y python3
-    fi
+- name: Enable EPEL repository (RedHat-based)
+  yum:
+    name: epel-release
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install Python 3.9
+  yum:
+    name: python39
+    state: present
+
+- name: Create symlink to use python3.9 as default
+  alternatives:
+    name: python3
+    path: /usr/bin/python3.9
+  when: ansible_os_family == "RedHat"
