@@ -24,6 +24,7 @@ resource "aws_db_instance" "main" {
   publicly_accessible     = false
   multi_az                = false
   storage_encrypted       = true
+  username = var.db_username
 
   tags = {
   }
