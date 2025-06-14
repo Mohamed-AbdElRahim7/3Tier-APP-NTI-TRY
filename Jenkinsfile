@@ -13,11 +13,23 @@ pipeline {
       }
     }
 
+    stage('Clean Terraform State') {
+      steps {
+        dir('terraform') {
+          echo '🧹 Cleaning old Terraform setup (if any)...'
+          sh 'rm -rf .terraform terraform.tfstate terraform.tfstate.backup'
+        }
+      }
+    }
+
     stage('Terraform Init') {
       steps {
         dir('terraform') {
-          sh 'terraform init'
-          echo '✅ Finished terraform init.'
+          sh '''
+            terraform init
+            terraform refresh
+          '''
+          echo '✅ Finished terraform init & refresh.'
         }
       }
     }
