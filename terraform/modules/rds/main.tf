@@ -19,6 +19,8 @@ resource "aws_db_instance" "main" {
   publicly_accessible     = false
   multi_az                = false
   storage_encrypted       = true
+  private_subnet_ids = module.vpc.private_subnet_ids
+
 
   tags = {
   }
