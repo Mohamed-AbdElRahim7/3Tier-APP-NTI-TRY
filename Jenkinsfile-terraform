@@ -92,33 +92,6 @@ pipeline {
         '''
       }
     }
-
-    stage('Prepare SSH Key') {
-      steps {
-        withCredentials([sshUserPrivateKey(
-          credentialsId: 'ec2-ssh-key',
-          keyFileVariable: 'SSH_KEY'
-        )]) {
-          sh '''
-            mkdir -p ~/.ssh
-            cp $SSH_KEY ~/.ssh/jenkins
-            chmod 600 ~/.ssh/jenkins
-          '''
-          echo '✅ SSH Key prepared for Ansible.'
-        }
-      }
-    }
-
-    stage('Run Ansible Playbook') {
-      steps {
-        dir('ansible') {
-          sh '''
-            ansible-playbook -i inventory playbooks/setup.yml
-          '''
-          echo '✅ Ansible Playbook executed.'
-        }
-      }
-    }
   }
 
   post {
@@ -130,7 +103,7 @@ pipeline {
           passwordVariable: 'AWS_SECRET_ACCESS_KEY'
         )]) {
           sh '''
-            echo "⚠️ Pipeline failed. Running terraform destroy..."
+            echo "⚠️ Terraform Pipeline failed. Running terraform destroy..."
             export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
             terraform destroy -auto-approve || true
@@ -147,7 +120,7 @@ pipeline {
           passwordVariable: 'AWS_SECRET_ACCESS_KEY'
         )]) {
           sh '''
-            echo "🛑 Pipeline aborted. Running terraform destroy..."
+            echo "🛑 Terraform Pipeline aborted. Running terraform destroy..."
             export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
             terraform destroy -auto-approve || true
