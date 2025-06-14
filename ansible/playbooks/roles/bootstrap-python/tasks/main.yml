@@ -1,16 +1,13 @@
 - name: Enable EPEL repository (RedHat-based)
-  yum:
-    name: epel-release
-    state: present
-  when: ansible_os_family == "RedHat"
+  shell: amazon-linux-extras enable epel || true
+  ignore_errors: true
 
 - name: Install Python 3.9
   yum:
     name: python39
     state: present
 
-- name: Create symlink to use python3.9 as default
+- name: Set python3 alternative to point to python3.9
   alternatives:
     name: python3
     path: /usr/bin/python3.9
-  when: ansible_os_family == "RedHat"
