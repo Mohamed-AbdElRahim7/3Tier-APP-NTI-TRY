@@ -12,7 +12,7 @@ pipeline {
     stage('Prepare SSH Key') {
       steps {
         withCredentials([sshUserPrivateKey(
-          credentialsId: 'ec2-ssh-key',           // تأكد إنه نفس ID اللي في Jenkins
+          credentialsId: 'ec2-ssh-key',
           keyFileVariable: 'SSH_KEY'
         )]) {
           sh '''
@@ -20,11 +20,15 @@ pipeline {
             cp $SSH_KEY ~/.ssh/jenkins
             chmod 600 ~/.ssh/jenkins
 
-            # optional: configure SSH to avoid fingerprint prompt
-            echo -e "Host *\\n  StrictHostKeyChecking no\\n  IdentityFile ~/.ssh/jenkins" > ~/.ssh/config
+            # Configure SSH to skip host key checking and use the correct key
+            cat <<EOF > ~/.ssh/config
+Host *
+  StrictHostKeyChecking no
+  IdentityFile ~/.ssh/jenkins
+EOF
             chmod 600 ~/.ssh/config
           '''
-          echo '✅ SSH Key prepared and configured for Ansible.'
+          echo '✅ SSH Key prepared and SSH config set.'
         }
       }
     }
