@@ -7,3 +7,8 @@ variable "db_password" {
   type        = string
   description = "RDS Password"
 }
+
+variable "project_name" {
+  type        = string
+  description = "Project name prefix"
+}
