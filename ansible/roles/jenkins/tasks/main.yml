@@ -1,0 +1,5 @@
+- import_tasks: install_python.yml
+
+- name: Install Jenkins (placeholder)
+  debug:
+    msg: "This is where Jenkins installation would occur."
