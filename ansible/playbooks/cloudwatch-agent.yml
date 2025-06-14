@@ -1,5 +1,0 @@
-- name: Install and configure CloudWatch Agent
-  hosts: all
-  become: true
-  roles:
-    - cloudwatch
