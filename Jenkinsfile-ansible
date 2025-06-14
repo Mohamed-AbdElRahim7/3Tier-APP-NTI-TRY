@@ -41,10 +41,11 @@ pipeline {
       steps {
         dir('ansible') {
           sh '''
+            export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i inventory playbooks/setup.yml
           '''
-          echo '✅ Ansible Playbook executed.'
         }
+        echo '✅ Ansible Playbook executed.'
       }
     }
   }
