@@ -1,6 +1,7 @@
 ############################################
 # terraform.tfvars - actual input values
 ############################################
+aws_region = "us-east-1"
 
 project_name = "nti-3tier-app"
 region       = "us-east-1"
