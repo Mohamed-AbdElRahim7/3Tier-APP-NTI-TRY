@@ -3,6 +3,7 @@ pipeline {
 
   environment {
     TF_IN_AUTOMATION = "true"
+    TF_VAR_aws_region = "us-east-1"  // ✅ أضفنا الـ region هنا
   }
 
   stages {
