@@ -1,11 +1,8 @@
-
 - hosts: all
   become: yes
   tasks:
-    - name: Install Java
-      package:
-        name: java-11-amazon-corretto
-        state: present
+    - name: Install Java manually
+      command: yum install -y java-11-amazon-corretto
 
     - name: Add Jenkins repo key
       rpm_key:
@@ -18,9 +15,7 @@
         dest: /etc/yum.repos.d/jenkins.repo
 
     - name: Install Jenkins
-      package:
-        name: jenkins
-        state: present
+      command: yum install -y jenkins
 
     - name: Start Jenkins
       service:
@@ -36,11 +31,7 @@
         immediate: yes
 
     - name: Install SonarScanner dependencies
-      package:
-        name:
-          - unzip
-          - wget
-        state: present
+      command: yum install -y unzip wget
 
     - name: Download SonarScanner
       get_url:
