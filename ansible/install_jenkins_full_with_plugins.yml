@@ -59,6 +59,11 @@
       delay: 10
       until: jenkins_restart.rc == 0
 
+    - name: Check if AWS CLI is installed
+      stat:
+        path: /usr/local/bin/aws
+      register: awscli_status
+
     - name: Install or update AWS CLI v2
       shell: |
         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -66,7 +71,12 @@
         ./aws/install --update
       args:
         chdir: /tmp
+      when: not awscli_status.stat.exists
 
+    - name: Check if Helm is installed
+      stat:
+        path: /usr/local/bin/helm
+      register: helm_status
 
     - name: Install Helm (with PATH fix)
       shell: |
@@ -75,12 +85,24 @@
         echo 'export PATH=$PATH:/usr/local/bin' >> /etc/profile
       args:
         executable: /bin/bash
+      when: not helm_status.stat.exists
+
+    - name: Check if kubectl is installed
+      stat:
+        path: /usr/local/bin/kubectl
+      register: kubectl_status
 
     - name: Install kubectl
       shell: |
         curl -o kubectl https://amazon-eks.s3.us-east-1.amazonaws.com/latest/bin/linux/amd64/kubectl
         chmod +x ./kubectl
         mv ./kubectl /usr/local/bin
+      when: not kubectl_status.stat.exists
+
+    - name: Check if Trivy is installed
+      stat:
+        path: /usr/local/bin/trivy
+      register: trivy_status
 
     - name: Install Trivy via tar.gz (version 0.46.0)
       shell: |
@@ -88,16 +110,19 @@
         tar zxvf /tmp/trivy.tar.gz -C /usr/local/bin
       args:
         executable: /bin/bash
+      when: not trivy_status.stat.exists
 
-
-
+    - name: Check if SonarScanner is installed
+      stat:
+        path: /opt/sonar-scanner
+      register: sonar_status
 
     - name: Install SonarScanner CLI
-        shell: |
-          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -O /tmp/sonar-scanner.zip --timeout=10
-          unzip /tmp/sonar-scanner.zip -d /opt/
-          ln -s /opt/sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
-          echo 'export PATH=$PATH:/opt/sonar-scanner/bin' >> /etc/profile
+      shell: |
+        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -O /tmp/sonar-scanner.zip --timeout=10
+        unzip /tmp/sonar-scanner.zip -d /opt/
+        ln -s /opt/sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+        echo 'export PATH=$PATH:/opt/sonar-scanner/bin' >> /etc/profile
       args:
         executable: /bin/bash
-
+      when: not sonar_status.stat.exists
