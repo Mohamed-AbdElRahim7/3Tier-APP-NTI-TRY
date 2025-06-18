@@ -19,41 +19,20 @@ pipeline {
             mkdir -p ~/.ssh
             cp $SSH_KEY ~/.ssh/jenkins
             chmod 600 ~/.ssh/jenkins
-
-            # Configure SSH to skip host key checking and use the correct key
-            cat <<EOF > ~/.ssh/config
-Host *
-  StrictHostKeyChecking no
-  IdentityFile ~/.ssh/jenkins
-EOF
-            chmod 600 ~/.ssh/config
           '''
-          echo '✅ SSH Key prepared and SSH config set.'
+          echo '✅ SSH Key prepared for Ansible.'
         }
       }
     }
 
-    stage('Debug SSH Key') {
-      steps {
-        sh '''
-          echo "📂 Listing ~/.ssh directory:"
-          ls -la ~/.ssh
-
-          echo "🔐 Checking if ~/.ssh/jenkins exists:"
-          [ -f ~/.ssh/jenkins ] && echo '✅ SSH key file found.' || echo '❌ SSH key file NOT found.'
-        '''
-      }
-    }
-
-    stage('Run Ansible Playbook') {
+    stage('Run Ansible Playbooks') {
       steps {
         dir('ansible') {
           sh '''
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i inventory playbooks/setup.yml
+            ansible-playbook -i hosts.ini install_jenkins_full_with_plugins.yml
+            ansible-playbook -i hosts.ini install_cloudwatch.yml
           '''
         }
-        echo '✅ Ansible Playbook executed.'
       }
     }
   }
