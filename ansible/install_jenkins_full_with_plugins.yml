@@ -1,65 +1,96 @@
-- hosts: all
+
+- name: Full Jenkins EC2 Setup with Required DevOps Tools
+  hosts: jenkins
   become: yes
+
   tasks:
-    - name: Install Java manually
-      command: yum install -y java-11-amazon-corretto
 
-    - name: Add Jenkins repo key
+    - name: Import Corretto GPG key
       rpm_key:
+        key: https://yum.corretto.aws/corretto.key
         state: present
-        key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
 
-    - name: Add Jenkins repository
+    - name: Add Corretto repository
+      get_url:
+        url: https://yum.corretto.aws/corretto.repo
+        dest: /etc/yum.repos.d/corretto.repo
+
+    - name: Install Java 17 and other dependencies
+      yum:
+        name:
+          - java-17-amazon-corretto
+          - git
+          - wget
+          - curl
+          - unzip
+          - docker
+        state: present
+
+    - name: Set Java 17 as default
+      shell: |
+        alternatives --install /usr/bin/java java /usr/lib/jvm/java-17-amazon-corretto/bin/java 20000
+        alternatives --set java /usr/lib/jvm/java-17-amazon-corretto/bin/java
+      args:
+        executable: /bin/bash
+
+    - name: Enable and start Docker
+      service:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+
+    - name: Add Jenkins repo
       get_url:
         url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
         dest: /etc/yum.repos.d/jenkins.repo
 
-    - name: Install Jenkins
-      command: yum install -y jenkins
+    - name: Import Jenkins GPG key
+      rpm_key:
+        state: present
+        key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
 
-    - name: Start Jenkins
+    - name: Install Jenkins
+      yum:
+        name: jenkins
+        state: present
+
+    - name: Enable and start Jenkins
       service:
         name: jenkins
-        state: started
         enabled: yes
+        state: started
 
-    - name: Open port 8080
-      firewalld:
-        port: 8080/tcp
-        permanent: true
-        state: enabled
-        immediate: yes
-
-    - name: Install SonarScanner dependencies
-      command: yum install -y unzip wget
-
-    - name: Download SonarScanner
-      get_url:
-        url: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
-        dest: /opt/sonar-scanner.zip
-
-    - name: Unzip SonarScanner
-      unarchive:
-        src: /opt/sonar-scanner.zip
-        dest: /opt/
-        remote_src: yes
-
-    - name: Symlink SonarScanner
-      file:
-        src: /opt/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner
-        dest: /usr/bin/sonar-scanner
-        state: link
-
-    - name: Download Jenkins CLI
-      get_url:
-        url: http://localhost:8080/jnlpJars/jenkins-cli.jar
-        dest: /tmp/jenkins-cli.jar
-
-    - name: Install Jenkins Plugins
-      shell: >
-        java -jar /tmp/jenkins-cli.jar -s http://localhost:8080 install-plugin
-        git workflow-aggregator ansible docker-plugin kubernetes terraform aws-credentials blueocean sonar -restart
-      environment:
-        JENKINS_HOME: /var/lib/jenkins
+    - name: Install AWS CLI v2
+      shell: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        ./aws/install
       args:
-        executable: /bin/bash
+        chdir: /tmp
+
+    - name: Install Helm
+      shell: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+    - name: Install kubectl
+      shell: |
+        curl -o kubectl https://amazon-eks.s3.us-east-1.amazonaws.com/latest/bin/linux/amd64/kubectl
+        chmod +x ./kubectl
+        mv ./kubectl /usr/local/bin
+
+    - name: Install Trivy
+      shell: |
+        rpm -ivh https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.1_Linux-64bit.rpm
+
+    - name: Install SonarScanner CLI
+      shell: |
+        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -O /tmp/sonar-scanner.zip
+        unzip /tmp/sonar-scanner.zip -d /opt/
+        ln -s /opt/sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+        echo 'export PATH=$PATH:/opt/sonar-scanner/bin' >> /etc/profile
