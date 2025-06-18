@@ -82,13 +82,13 @@
         chmod +x ./kubectl
         mv ./kubectl /usr/local/bin
 
-    - name: Install Trivy using RPM repo
+    - name: Install Trivy via tar.gz (latest release)
       shell: |
-        rpm --import https://aquasecurity.github.io/trivy-repo/RPM-GPG-KEY-trivy
-        curl -sfL https://aquasecurity.github.io/trivy-repo/rpm/repos/rhel/trivy.repo -o /etc/yum.repos.d/trivy.repo
-        yum install -y trivy
+        curl -sSL https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.1_Linux-64bit.tar.gz -o /tmp/trivy.tar.gz
+        tar zxvf /tmp/trivy.tar.gz -C /usr/local/bin
       args:
         executable: /bin/bash
+
 
 
     - name: Install SonarScanner CLI
