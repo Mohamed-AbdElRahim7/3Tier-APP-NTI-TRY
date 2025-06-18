@@ -1,4 +1,3 @@
-
 - name: Install and Configure CloudWatch Agent
   hosts: jenkins
   become: yes
@@ -9,10 +8,8 @@
         url: https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
         dest: /tmp/amazon-cloudwatch-agent.rpm
 
-    - name: Install CloudWatch Agent
-      yum:
-        name: /tmp/amazon-cloudwatch-agent.rpm
-        state: present
+    - name: Install CloudWatch Agent using rpm
+      command: rpm -ivh /tmp/amazon-cloudwatch-agent.rpm
 
     - name: Upload CloudWatch config
       copy:
