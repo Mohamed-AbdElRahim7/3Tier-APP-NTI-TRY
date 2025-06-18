@@ -82,12 +82,13 @@
         chmod +x ./kubectl
         mv ./kubectl /usr/local/bin
 
-    - name: Install Trivy via tar.gz (latest release)
+    - name: Install Trivy via tar.gz (version 0.46.0)
       shell: |
-        curl -sSL https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.1_Linux-64bit.tar.gz -o /tmp/trivy.tar.gz
+        curl -sSL https://github.com/aquasecurity/trivy/releases/download/v0.46.0/trivy_0.46.0_Linux-64bit.tar.gz -o /tmp/trivy.tar.gz
         tar zxvf /tmp/trivy.tar.gz -C /usr/local/bin
       args:
         executable: /bin/bash
+
 
 
 
