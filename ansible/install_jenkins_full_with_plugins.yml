@@ -67,9 +67,13 @@
       args:
         chdir: /tmp
 
-    - name: Install Helm
+    - name: Install Helm (with PATH fix)
       shell: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        export PATH=$PATH:/usr/local/bin
+        echo 'export PATH=$PATH:/usr/local/bin' >> /etc/profile
+      args:
+        executable: /bin/bash
 
     - name: Install kubectl
       shell: |
