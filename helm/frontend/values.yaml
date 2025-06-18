@@ -1,0 +1,13 @@
+replicaCount: 2
+
+image:
+  repository: 757351641388.dkr.ecr.us-east-1.amazonaws.com/nti-3tier-app-frontend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+
+service:
+  type: ClusterIP
+  port: 80
+
+containerPort: 80
