@@ -22,8 +22,8 @@
 
     - name: Set Java 17 as default
       shell: |
-        alternatives --install /usr/bin/java java /usr/lib/jvm/java-17-amazon-corretto/bin/java 20000
-        alternatives --set java /usr/lib/jvm/java-17-amazon-corretto/bin/java
+        alternatives --install /usr/bin/java java /usr/lib/jvm/java-17-amazon-corretto.x86_64/bin/java 20000
+        alternatives --set java /usr/lib/jvm/java-17-amazon-corretto.x86_64/bin/java
       args:
         executable: /bin/bash
 
@@ -52,16 +52,17 @@
     - name: Install Jenkins
       command: yum install -y jenkins
 
-    - name: Enable and start Jenkins
-      service:
-        name: jenkins
-        enabled: yes
-        state: started
+    - name: Restart Jenkins with retry
+      shell: systemctl daemon-reexec && systemctl restart jenkins
+      register: jenkins_restart
+      retries: 3
+      delay: 10
+      until: jenkins_restart.rc == 0
 
     - name: Install AWS CLI v2
       shell: |
         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        unzip awscliv2.zip
+        unzip -o awscliv2.zip
         ./aws/install
       args:
         chdir: /tmp
