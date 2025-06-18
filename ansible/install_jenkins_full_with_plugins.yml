@@ -59,13 +59,14 @@
       delay: 10
       until: jenkins_restart.rc == 0
 
-    - name: Install AWS CLI v2
+    - name: Install or update AWS CLI v2
       shell: |
         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
         unzip -o awscliv2.zip
-        ./aws/install
+        ./aws/install --update
       args:
         chdir: /tmp
+
 
     - name: Install Helm (with PATH fix)
       shell: |
