@@ -1,0 +1,11 @@
+
+adminUser: admin
+adminPassword: admin
+
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    folder: "K8s Dashboards"
+  datasources:
+    enabled: true
