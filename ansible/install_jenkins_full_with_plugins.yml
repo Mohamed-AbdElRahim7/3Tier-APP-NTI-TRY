@@ -1,9 +1,11 @@
-
 - name: Full Jenkins EC2 Setup with Required DevOps Tools
   hosts: jenkins
   become: yes
 
   tasks:
+    - name: Remove Java 11 if installed
+      command: yum remove -y java-11-amazon-corretto
+      ignore_errors: yes
 
     - name: Import Corretto GPG key
       rpm_key:
@@ -16,15 +18,7 @@
         dest: /etc/yum.repos.d/corretto.repo
 
     - name: Install Java 17 and other dependencies
-      yum:
-        name:
-          - java-17-amazon-corretto
-          - git
-          - wget
-          - curl
-          - unzip
-          - docker
-        state: present
+      command: yum install -y java-17-amazon-corretto git wget curl unzip docker
 
     - name: Set Java 17 as default
       shell: |
@@ -56,9 +50,7 @@
         key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
 
     - name: Install Jenkins
-      yum:
-        name: jenkins
-        state: present
+      command: yum install -y jenkins
 
     - name: Enable and start Jenkins
       service:
