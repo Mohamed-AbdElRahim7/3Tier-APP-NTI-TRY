@@ -23,7 +23,14 @@ pipeline {
       }
       steps {
         withSonarQubeEnv('SonarQube') {
-          sh 'sonar-scanner -Dsonar.projectKey=my-project -Dsonar.sources=. -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN'
+          sh '''
+            echo "🔧 Adding sonar-scanner to PATH"
+            export PATH=$PATH:/opt/sonar-scanner/bin
+            sonar-scanner -Dsonar.projectKey=my-project \
+                          -Dsonar.sources=. \
+                          -Dsonar.host.url=$SONAR_HOST_URL \
+                          -Dsonar.login=$SONAR_TOKEN
+          '''
         }
       }
     }
