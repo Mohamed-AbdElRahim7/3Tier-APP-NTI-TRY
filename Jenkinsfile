@@ -124,7 +124,7 @@ pipeline {
           helm repo update
           helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
             -f helm-monitoring/grafana-values.yaml \
-            --namespace monitoring
+            --namespace monitoring --create-namespace
         '''
       }
     }
