@@ -1,13 +1,9 @@
-
 pipeline {
   agent any
 
   environment {
-    AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
-    AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
-    ECR_REPO              = "757351641388.dkr.ecr.us-east-1.amazonaws.com"
-    REGION                = "us-east-1"
-    SONARQUBE             = "SonarQubeServer"
+    ECR_REPO = "757351641388.dkr.ecr.us-east-1.amazonaws.com"
+    REGION   = "us-east-1"
   }
 
   tools {
@@ -29,6 +25,15 @@ pipeline {
         withSonarQubeEnv('SonarQube') {
           sh 'sonar-scanner -Dsonar.projectKey=my-project -Dsonar.sources=. -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN'
         }
+      }
+    }
+
+    stage('Check SonarQube Health') {
+      steps {
+        sh '''
+          echo "🔍 Checking SonarQube system health..."
+          curl -s http://localhost:9000/api/system/health | jq || echo "⚠️ Could not reach SonarQube server."
+        '''
       }
     }
 
@@ -60,7 +65,13 @@ pipeline {
 
     stage('Login to ECR') {
       steps {
-        sh 'aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO'
+        withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+          sh '''
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO
+          '''
+        }
       }
     }
 
@@ -73,9 +84,11 @@ pipeline {
 
     stage('Configure kubectl') {
       steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+        withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
           sh '''
-            aws eks update-kubeconfig --region us-east-1 --name nti-3Tier-App
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            aws eks update-kubeconfig --region $REGION --name nti-3Tier-App
           '''
         }
       }
@@ -84,9 +97,15 @@ pipeline {
     stage('Deploy to EKS via Helm') {
       steps {
         sh '''
-          helm upgrade --install backend ./helm/backend             --set image.repository=$ECR_REPO/nti-3tier-app-backend             --set image.tag=$BUILD_NUMBER             --namespace default --create-namespace --wait
+          helm upgrade --install backend ./helm/backend \
+            --set image.repository=$ECR_REPO/nti-3tier-app-backend \
+            --set image.tag=$BUILD_NUMBER \
+            --namespace default --create-namespace --wait
 
-          helm upgrade --install frontend ./helm/frontend             --set image.repository=$ECR_REPO/nti-3tier-app-frontend             --set image.tag=$BUILD_NUMBER             --namespace default --create-namespace --wait
+          helm upgrade --install frontend ./helm/frontend \
+            --set image.repository=$ECR_REPO/nti-3tier-app-frontend \
+            --set image.tag=$BUILD_NUMBER \
+            --namespace default --create-namespace --wait
         '''
       }
     }
@@ -96,7 +115,9 @@ pipeline {
         sh '''
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo update
-          helm upgrade --install monitoring prometheus-community/kube-prometheus-stack             -f helm-monitoring/grafana-values.yaml             --namespace monitoring --create-namespace
+          helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+            -f helm-monitoring/grafana-values.yaml \
+            --namespace monitoring --create-namespace
         '''
       }
     }
