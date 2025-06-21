@@ -107,12 +107,12 @@ pipeline {
           helm upgrade --install backend ./helm/backend \
             --set image.repository=$ECR_REPO/nti-3tier-app-backend \
             --set image.tag=$BUILD_NUMBER \
-            --namespace default --create-namespace --wait
+            --namespace default --wait
 
           helm upgrade --install frontend ./helm/frontend \
             --set image.repository=$ECR_REPO/nti-3tier-app-frontend \
             --set image.tag=$BUILD_NUMBER \
-            --namespace default --create-namespace --wait
+            --namespace default --wait
         '''
       }
     }
@@ -124,7 +124,7 @@ pipeline {
           helm repo update
           helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
             -f helm-monitoring/grafana-values.yaml \
-            --namespace monitoring --create-namespace
+            --namespace monitoring
         '''
       }
     }
