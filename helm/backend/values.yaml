@@ -14,4 +14,4 @@ containerPort: 3000
 
 env:
   - name: MONGO_URI
-    value: mongodb://mongo-mongodb.default.svc.cluster.local:27017/mydb
+    value: "mongodb://mongo-mongodb.default.svc.cluster.local:27017"
