@@ -33,11 +33,12 @@ pipeline {
               terraform refresh
             '''
           }
+          echo '✅ Terraform initialized.'
         }
       }
     }
 
-    stage('Terraform Destroy') {
+    stage('Terraform Destroy - Node Groups') {
       steps {
         dir('terraform') {
           withCredentials([usernamePassword(
@@ -46,11 +47,33 @@ pipeline {
             passwordVariable: 'AWS_SECRET_ACCESS_KEY'
           )]) {
             sh '''
+              echo "🧨 Destroying EKS Node Groups first..."
+              export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+              export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+              terraform destroy -target=module.eks.aws_eks_node_group.eks_nodes -auto-approve
+            '''
+          }
+          echo '✅ Node Groups destroyed.'
+        }
+      }
+    }
+
+    stage('Terraform Destroy - All') {
+      steps {
+        dir('terraform') {
+          withCredentials([usernamePassword(
+            credentialsId: 'aws-creds',
+            usernameVariable: 'AWS_ACCESS_KEY_ID',
+            passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+          )]) {
+            sh '''
+              echo "🔥 Destroying remaining infrastructure..."
               export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
               export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
               terraform destroy -auto-approve
             '''
           }
+          echo '✅ Infrastructure destroyed.'
         }
       }
     }
