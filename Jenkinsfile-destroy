@@ -2,6 +2,7 @@ pipeline {
   agent {
     docker {
       image 'hashicorp/terraform:1.8.2'
+      args '-u root --entrypoint=""'
     }
   }
 
@@ -45,7 +46,6 @@ pipeline {
             passwordVariable: 'AWS_SECRET_ACCESS_KEY'
           )]) {
             sh '''
-              echo "🔥 Starting terraform destroy..."
               export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
               export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
               terraform destroy -auto-approve
